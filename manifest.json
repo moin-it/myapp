@@ -1,36 +1,21 @@
 {
-  "name": "আমার অ্যাপ",
-  "short_name": "অ্যাপ",
-  "description": "একটি Progressive Web App",
+  "name": "PWA Builder",
+  "short_name": "PWA Builder",
+  "description": "HTML ফাইলকে PWA তে রূপান্তর করুন",
   "start_url": "/",
   "display": "standalone",
-  "orientation": "portrait",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
-  "scope": "/",
-  "lang": "bn",
-  "dir": "ltr",
   "icons": [
     {
       "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ],
-  "categories": ["productivity", "utilities"],
-  "screenshots": [
-    {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "form_factor": "narrow"
+      "type": "image/png"
     }
   ]
 }
