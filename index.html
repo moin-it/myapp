@@ -530,7 +530,8 @@
 
         var swInit = [
           "(function() {",
-          "  var swBlob = new Blob(['" + swCode.replace(/'/g, "\'") + "'], { type: 'application/javascript' });",
+          "  var swCode = atob('" + btoa(swCode) + "');",
+          "  var swBlob = new Blob([swCode], { type: 'application/javascript' });",
           "  var swUrl = URL.createObjectURL(swBlob);",
           "  if ('serviceWorker' in navigator) {",
           "    navigator.serviceWorker.register(swUrl).catch(function(e) { console.log('SW:', e); });",
