@@ -3,11 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PWA Builder - HTML to App</title>
+  <title>PWA Builder</title>
   <meta name="theme-color" content="#0f172a">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -20,42 +19,27 @@
       align-items: center;
       padding: 20px;
     }
-    .container {
-      max-width: 600px;
-      width: 100%;
-      text-align: center;
-    }
+    .container { max-width: 600px; width: 100%; text-align: center; }
     .logo {
       width: 80px; height: 80px;
       background: linear-gradient(135deg, #3b82f6, #8b5cf6);
       border-radius: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 30px auto 20px;
-      font-size: 36px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 30px auto 20px; font-size: 36px;
       box-shadow: 0 10px 40px rgba(59, 130, 246, 0.3);
     }
     h1 {
-      font-size: 28px;
-      margin-bottom: 8px;
+      font-size: 28px; margin-bottom: 8px;
       background: linear-gradient(90deg, #60a5fa, #a78bfa);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
-    .subtitle {
-      color: #94a3b8;
-      font-size: 15px;
-      margin-bottom: 40px;
-    }
+    .subtitle { color: #94a3b8; font-size: 15px; margin-bottom: 40px; }
     .upload-area {
       border: 2px dashed rgba(96, 165, 250, 0.3);
-      border-radius: 20px;
-      padding: 50px 30px;
+      border-radius: 20px; padding: 50px 30px;
       background: rgba(255, 255, 255, 0.02);
-      transition: all 0.3s;
-      cursor: pointer;
-      position: relative;
+      transition: all 0.3s; cursor: pointer; position: relative;
     }
     .upload-area:hover, .upload-area.dragover {
       border-color: #60a5fa;
@@ -69,10 +53,8 @@
       display: none;
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 16px;
-      padding: 20px;
-      margin-top: 20px;
-      text-align: left;
+      border-radius: 16px; padding: 20px;
+      margin-top: 20px; text-align: left;
     }
     .file-info.show { display: block; animation: fadeIn 0.3s; }
     @keyframes fadeIn {
@@ -81,10 +63,7 @@
     }
     .file-name { font-weight: 600; color: #60a5fa; margin-bottom: 5px; word-break: break-all; }
     .file-size { color: #64748b; font-size: 13px; }
-    .preview-section {
-      display: none;
-      margin-top: 25px;
-    }
+    .preview-section { display: none; margin-top: 25px; }
     .preview-section.show { display: block; animation: fadeIn 0.4s; }
     .preview-title {
       font-size: 14px; color: #94a3b8; margin-bottom: 12px;
@@ -109,110 +88,64 @@
       background: #000; border-radius: 0 0 15px 15px;
       z-index: 10;
     }
-    .preview-iframe {
-      width: 100%; height: 100%;
-      border: none; background: #fff;
-    }
+    .preview-iframe { width: 100%; height: 100%; border: none; background: #fff; }
     .install-btn {
-      display: none;
-      width: 100%; padding: 16px;
+      display: none; width: 100%; padding: 16px;
       margin-top: 25px;
       background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-      color: white; border: none;
-      border-radius: 14px;
+      color: white; border: none; border-radius: 14px;
       font-size: 17px; font-weight: 700;
-      cursor: pointer;
-      transition: all 0.3s;
+      cursor: pointer; transition: all 0.3s;
       box-shadow: 0 8px 30px rgba(59, 130, 246, 0.3);
     }
     .install-btn.show { display: block; animation: fadeIn 0.4s; }
-    .install-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 40px rgba(59, 130, 246, 0.4);
-    }
+    .install-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(59, 130, 246, 0.4); }
     .install-btn:active { transform: scale(0.98); }
-    .settings {
-      display: none;
-      margin-top: 20px;
-      text-align: left;
-    }
+    .settings { display: none; margin-top: 20px; text-align: left; }
     .settings.show { display: block; animation: fadeIn 0.3s; }
     .setting-group { margin-bottom: 15px; }
-    .setting-label {
-      display: block;
-      font-size: 13px; color: #94a3b8;
-      margin-bottom: 6px;
-    }
+    .setting-label { display: block; font-size: 13px; color: #94a3b8; margin-bottom: 6px; }
     .setting-input {
       width: 100%; padding: 12px 16px;
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
-      color: #e2e8f0;
-      font-size: 15px;
-      outline: none;
+      border-radius: 10px; color: #e2e8f0;
+      font-size: 15px; outline: none;
       transition: border-color 0.2s;
     }
     .setting-input:focus { border-color: #60a5fa; }
-    .color-picker-wrapper {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-    .color-picker {
-      width: 50px; height: 40px;
-      border: none; border-radius: 8px;
-      cursor: pointer;
-    }
-    .steps {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      margin: 30px 0;
-    }
+    .color-picker-wrapper { display: flex; gap: 10px; align-items: center; }
+    .color-picker { width: 50px; height: 40px; border: none; border-radius: 8px; cursor: pointer; }
+    .steps { display: flex; justify-content: center; gap: 20px; margin: 30px 0; }
     .step {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      opacity: 0.4;
-      transition: opacity 0.3s;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 8px;
+      opacity: 0.4; transition: opacity 0.3s;
     }
     .step.active { opacity: 1; }
     .step.completed { opacity: 0.7; }
     .step-number {
-      width: 36px; height: 36px;
-      border-radius: 50%;
+      width: 36px; height: 36px; border-radius: 50%;
       background: rgba(96, 165, 250, 0.2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 14px;
     }
-    .step.active .step-number {
-      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    }
+    .step.active .step-number { background: linear-gradient(135deg, #3b82f6, #8b5cf6); }
     .step-label { font-size: 12px; color: #94a3b8; }
     .toast {
-      position: fixed;
-      bottom: 30px; left: 50%;
+      position: fixed; bottom: 30px; left: 50%;
       transform: translateX(-50%) translateY(100px);
       background: rgba(15, 23, 42, 0.95);
       border: 1px solid rgba(96, 165, 250, 0.3);
-      padding: 14px 24px;
-      border-radius: 12px;
-      font-size: 14px;
-      z-index: 1000;
+      padding: 14px 24px; border-radius: 12px;
+      font-size: 14px; z-index: 1000;
       transition: transform 0.3s;
       backdrop-filter: blur(10px);
-      max-width: 90%;
-      text-align: center;
+      max-width: 90%; text-align: center;
     }
     .toast.show { transform: translateX(-50%) translateY(0); }
     .loading {
-      display: none;
-      margin: 20px auto;
+      display: none; margin: 20px auto;
       width: 40px; height: 40px;
       border: 3px solid rgba(96, 165, 250, 0.2);
       border-top-color: #60a5fa;
@@ -221,37 +154,25 @@
     }
     .loading.show { display: block; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    footer {
-      margin-top: auto;
-      padding: 30px;
-      color: #475569;
-      font-size: 12px;
-    }
+    footer { margin-top: auto; padding: 30px; color: #475569; font-size: 12px; }
     .download-btn {
-      display: none;
-      width: 100%; padding: 14px;
+      display: none; width: 100%; padding: 14px;
       margin-top: 12px;
       background: rgba(255, 255, 255, 0.05);
       color: #60a5fa;
       border: 1px solid rgba(96, 165, 250, 0.3);
-      border-radius: 12px;
-      font-size: 15px; font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s;
+      border-radius: 12px; font-size: 15px; font-weight: 600;
+      cursor: pointer; transition: all 0.3s;
     }
     .download-btn.show { display: block; }
     .download-btn:hover { background: rgba(96, 165, 250, 0.1); }
     .reset-btn {
-      display: none;
-      width: 100%; padding: 12px;
+      display: none; width: 100%; padding: 12px;
       margin-top: 10px;
-      background: transparent;
-      color: #64748b;
+      background: transparent; color: #64748b;
       border: 1px solid rgba(100, 116, 139, 0.3);
-      border-radius: 10px;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.3s;
+      border-radius: 10px; font-size: 14px;
+      cursor: pointer; transition: all 0.3s;
     }
     .reset-btn.show { display: block; }
     .reset-btn:hover { color: #e2e8f0; border-color: #94a3b8; }
@@ -330,9 +251,7 @@
 
   <div class="toast" id="toast"></div>
 
-  <footer>
-    Client-side PWA Builder
-  </footer>
+  <footer>Client-side PWA Builder</footer>
 
   <script>
     (function() {
@@ -366,7 +285,6 @@
       var generatedBlobUrl = "";
       var generatedFileName = "";
 
-      // Color picker sync
       themeColorPicker.addEventListener("input", function(e) {
         themeColorText.value = e.target.value;
         if (uploadedHTML) generatePreview();
@@ -383,7 +301,6 @@
         bgColorPicker.value = e.target.value;
       });
 
-      // Upload events
       uploadArea.addEventListener("click", function() { fileInput.click(); });
 
       uploadArea.addEventListener("dragover", function(e) {
@@ -473,19 +390,15 @@
       }
 
       function wrapAsPWA(html, name, themeColor, bgColor) {
-        // Extract body content
         var bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
         var bodyContent = bodyMatch ? bodyMatch[1] : html;
 
-        // Extract head content
         var headMatch = html.match(/<head[^>]*>([\s\S]*)<\/head>/i);
         var headContent = headMatch ? headMatch[1] : "";
 
-        // Extract title
         var titleMatch = html.match(/<title>(.*?)<\/title>/i);
         var pageTitle = titleMatch ? titleMatch[1] : name;
 
-        // Extract styles, scripts, links
         var styleMatches = headContent.match(/<style[^>]*>[\s\S]*?<\/style>/gi) || [];
         var scriptMatches = headContent.match(/<script[^>]*>[\s\S]*?<\/script>/gi) || [];
         var linkMatches = headContent.match(/<link[^>]*>/gi) || [];
@@ -508,73 +421,137 @@
           ]
         };
 
-        // Build PWA HTML
-        var parts = [];
-        parts.push("<!DOCTYPE html>");
-        parts.push('<html lang="bn">');
-        parts.push("<head>");
-        parts.push('  <meta charset="UTF-8">');
-        parts.push('  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">');
-        parts.push('  <meta name="theme-color" content="' + themeColor + '">');
-        parts.push('  <meta name="background-color" content="' + bgColor + '">');
-        parts.push('  <meta name="apple-mobile-web-app-capable" content="yes">');
-        parts.push('  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">');
-        parts.push('  <meta name="apple-mobile-web-app-title" content="' + escapeHtml(name) + '">');
-        parts.push('  <title>' + escapeHtml(pageTitle) + '</title>');
-        parts.push('  <link rel="manifest" href="data:application/json;base64,' + btoa(JSON.stringify(manifestObj)) + '">');
-        parts.push('  <link rel="apple-touch-icon" href="data:image/svg+xml;base64,' + iconSvg + '">');
-        parts.push('  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,' + iconSvg + '">');
+        // Build HTML using DOM API to avoid tag issues
+        var doc = document.implementation.createHTMLDocument("");
+        doc.documentElement.setAttribute("lang", "bn");
 
-        if (styleMatches.length) {
-          parts.push("  " + styleMatches.join("\n  "));
-        }
-        if (linkMatches.length) {
-          parts.push("  " + linkMatches.join("\n  "));
-        }
+        var head = doc.head;
 
-        parts.push("  <style>");
-        parts.push("    html, body { margin: 0; padding: 0; min-height: 100vh; min-height: 100dvh; width: 100%; -webkit-tap-highlight-color: transparent; }");
-        parts.push("    body { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }");
-        parts.push("    * { -webkit-overflow-scrolling: touch; }");
-        parts.push("    ::-webkit-scrollbar { width: 0px; background: transparent; }");
-        parts.push("  </style>");
+        var metaCharset = doc.createElement("meta");
+        metaCharset.setAttribute("charset", "UTF-8");
+        head.appendChild(metaCharset);
 
-        if (scriptMatches.length) {
-          parts.push("  " + scriptMatches.join("\n  "));
-        }
+        var metaViewport = doc.createElement("meta");
+        metaViewport.setAttribute("name", "viewport");
+        metaViewport.setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no");
+        head.appendChild(metaViewport);
 
-        parts.push("</head>");
-        parts.push("<body>");
-        parts.push(bodyContent);
+        var metaTheme = doc.createElement("meta");
+        metaTheme.setAttribute("name", "theme-color");
+        metaTheme.setAttribute("content", themeColor);
+        head.appendChild(metaTheme);
 
-        // Inline service worker registration
-        parts.push("<script>");
-        parts.push("  (function() {");
-        parts.push('    var swCode = "self.addEventListener(\'install\',function(e){e.waitUntil(caches.open(\'pwa-cache\').then(function(c){return c.addAll([\'./\']);}));self.skipWaiting();});self.addEventListener(\'activate\',function(e){e.waitUntil(self.clients.claim());});self.addEventListener(\'fetch\',function(e){e.respondWith(caches.match(e.request).then(function(r){return r||fetch(e.request).catch(function(){return new Response(\'Offline\',{status:503});});}));});";');
-        parts.push("    var swBlob = new Blob([swCode], { type: 'application/javascript' });");
-        parts.push("    var swUrl = URL.createObjectURL(swBlob);");
-        parts.push('    if ("serviceWorker" in navigator) {');
-        parts.push("      navigator.serviceWorker.register(swUrl).catch(function(e) { console.log('SW:', e); });");
-        parts.push("    }");
-        parts.push("  })();");
-        parts.push("</script>");
+        var metaBg = doc.createElement("meta");
+        metaBg.setAttribute("name", "background-color");
+        metaBg.setAttribute("content", bgColor);
+        head.appendChild(metaBg);
 
-        parts.push("</body>");
-        parts.push("</html>");
+        var metaApple = doc.createElement("meta");
+        metaApple.setAttribute("name", "apple-mobile-web-app-capable");
+        metaApple.setAttribute("content", "yes");
+        head.appendChild(metaApple);
 
-        return parts.join("\n");
+        var metaAppleStyle = doc.createElement("meta");
+        metaAppleStyle.setAttribute("name", "apple-mobile-web-app-status-bar-style");
+        metaAppleStyle.setAttribute("content", "black-translucent");
+        head.appendChild(metaAppleStyle);
+
+        var metaAppleTitle = doc.createElement("meta");
+        metaAppleTitle.setAttribute("name", "apple-mobile-web-app-title");
+        metaAppleTitle.setAttribute("content", name);
+        head.appendChild(metaAppleTitle);
+
+        var title = doc.createElement("title");
+        title.textContent = pageTitle;
+        head.appendChild(title);
+
+        var manifestLink = doc.createElement("link");
+        manifestLink.setAttribute("rel", "manifest");
+        manifestLink.setAttribute("href", "data:application/json;base64," + btoa(JSON.stringify(manifestObj)));
+        head.appendChild(manifestLink);
+
+        var iconLink = doc.createElement("link");
+        iconLink.setAttribute("rel", "apple-touch-icon");
+        iconLink.setAttribute("href", "data:image/svg+xml;base64," + iconSvg);
+        head.appendChild(iconLink);
+
+        var faviconLink = doc.createElement("link");
+        faviconLink.setAttribute("rel", "icon");
+        faviconLink.setAttribute("type", "image/svg+xml");
+        faviconLink.setAttribute("href", "data:image/svg+xml;base64," + iconSvg);
+        head.appendChild(faviconLink);
+
+        styleMatches.forEach(function(styleTag) {
+          var div = document.createElement("div");
+          div.innerHTML = styleTag;
+          if (div.firstChild) head.appendChild(div.firstChild);
+        });
+
+        linkMatches.forEach(function(linkTag) {
+          var div = document.createElement("div");
+          div.innerHTML = linkTag;
+          if (div.firstChild) head.appendChild(div.firstChild);
+        });
+
+        var pwaStyle = doc.createElement("style");
+        pwaStyle.textContent = [
+          "html, body { margin: 0; padding: 0; min-height: 100vh; min-height: 100dvh; width: 100%; -webkit-tap-highlight-color: transparent; }",
+          "body { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }",
+          "* { -webkit-overflow-scrolling: touch; }",
+          "::-webkit-scrollbar { width: 0px; background: transparent; }"
+        ].join("
+");
+        head.appendChild(pwaStyle);
+
+        scriptMatches.forEach(function(scriptTag) {
+          var div = document.createElement("div");
+          div.innerHTML = scriptTag;
+          if (div.firstChild) head.appendChild(div.firstChild);
+        });
+
+        var body = doc.body;
+        body.innerHTML = bodyContent;
+
+        // Add service worker via DOM - no script tag strings in code
+        var swScript = doc.createElement("script");
+        var swCode = [
+          "self.addEventListener('install',function(e){",
+          "  e.waitUntil(caches.open('pwa-cache').then(function(c){return c.addAll(['./']);}));",
+          "  self.skipWaiting();",
+          "});",
+          "self.addEventListener('activate',function(e){",
+          "  e.waitUntil(self.clients.claim());",
+          "});",
+          "self.addEventListener('fetch',function(e){",
+          "  e.respondWith(caches.match(e.request).then(function(r){",
+          "    return r||fetch(e.request).catch(function(){return new Response('Offline',{status:503});});",
+          "  }));",
+          "});"
+        ].join("
+");
+
+        var swInit = [
+          "(function() {",
+          "  var swBlob = new Blob(['" + swCode.replace(/'/g, "\'") + "'], { type: 'application/javascript' });",
+          "  var swUrl = URL.createObjectURL(swBlob);",
+          "  if ('serviceWorker' in navigator) {",
+          "    navigator.serviceWorker.register(swUrl).catch(function(e) { console.log('SW:', e); });",
+          "  }",
+          "})();"
+        ].join("
+");
+
+        swScript.textContent = swInit;
+        body.appendChild(swScript);
+
+        return "<!DOCTYPE html>
+" + doc.documentElement.outerHTML;
       }
 
       function generateIconSVG(color, name) {
         var initial = name.charAt(0).toUpperCase();
         var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="128" fill="' + color + '"/><text x="256" y="320" font-family="Arial,sans-serif" font-size="240" font-weight="bold" fill="white" text-anchor="middle">' + initial + '</text></svg>';
         return btoa(svg);
-      }
-
-      function escapeHtml(text) {
-        var div = document.createElement("div");
-        div.textContent = text;
-        return div.innerHTML;
       }
 
       installBtn.addEventListener("click", function() {
@@ -631,7 +608,6 @@
         }, 5000);
       }
 
-      // Register SW for builder itself
       if ("serviceWorker" in navigator) {
         navigator.serviceWorker.register("sw.js").catch(function() {});
       }
