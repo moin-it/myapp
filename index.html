@@ -498,8 +498,7 @@
           "body { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }",
           "* { -webkit-overflow-scrolling: touch; }",
           "::-webkit-scrollbar { width: 0px; background: transparent; }"
-        ].join("
-");
+        ].join("\n");
         head.appendChild(pwaStyle);
 
         scriptMatches.forEach(function(scriptTag) {
@@ -525,8 +524,7 @@
           "    return r||fetch(e.request).catch(function(){return new Response('Offline',{status:503});});",
           "  }));",
           "});"
-        ].join("
-");
+        ].join("\n");
 
         var swInit = [
           "(function() {",
@@ -537,14 +535,12 @@
           "    navigator.serviceWorker.register(swUrl).catch(function(e) { console.log('SW:', e); });",
           "  }",
           "})();"
-        ].join("
-");
+        ].join("\n");
 
         swScript.textContent = swInit;
         body.appendChild(swScript);
 
-        return "<!DOCTYPE html>
-" + doc.documentElement.outerHTML;
+        return "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
       }
 
       function generateIconSVG(color, name) {
