@@ -239,7 +239,7 @@
       <div class="phone-frame">
         <div class="phone-screen">
           <div class="phone-notch"></div>
-          <iframe class="preview-iframe" id="previewFrame" sandbox="allow-scripts allow-same-origin"></iframe>
+          <iframe class="preview-iframe" id="previewFrame" sandbox="allow-scripts"></iframe>
         </div>
       </div>
     </div>
@@ -376,7 +376,7 @@
         if (generatedBlobUrl) URL.revokeObjectURL(generatedBlobUrl);
         var blob = new Blob([pwaHTML], { type: "text/html" });
         generatedBlobUrl = URL.createObjectURL(blob);
-        generatedFileName = name.replace(/\s+/g, "-").toLowerCase() + "-pwa.html";
+        generatedFileName = name.replace(/\s/g, "-").toLowerCase() + "-pwa.html";
 
         previewFrame.src = generatedBlobUrl;
         previewSection.classList.add("show");
@@ -421,7 +421,6 @@
           ]
         };
 
-        // Build HTML using DOM API to avoid tag issues
         var doc = document.implementation.createHTMLDocument("");
         doc.documentElement.setAttribute("lang", "bn");
 
@@ -512,7 +511,6 @@
         var body = doc.body;
         body.innerHTML = bodyContent;
 
-        // Add service worker via DOM - no script tag strings in code
         var swScript = doc.createElement("script");
         var swCode = [
           "self.addEventListener('install',function(e){",
