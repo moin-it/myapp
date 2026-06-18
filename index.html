@@ -389,6 +389,10 @@
         step3.classList.add("active");
       }
 
+      function utf8ToBase64(str) {
+        return btoa(unescape(encodeURIComponent(str)));
+      }
+
       function wrapAsPWA(html, name, themeColor, bgColor) {
         var bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
         var bodyContent = bodyMatch ? bodyMatch[1] : html;
@@ -466,7 +470,7 @@
 
         var manifestLink = doc.createElement("link");
         manifestLink.setAttribute("rel", "manifest");
-        manifestLink.setAttribute("href", "data:application/json;base64," + btoa(JSON.stringify(manifestObj)));
+        manifestLink.setAttribute("href", "data:application/json;base64," + utf8ToBase64(JSON.stringify(manifestObj)));
         head.appendChild(manifestLink);
 
         var iconLink = doc.createElement("link");
@@ -528,7 +532,7 @@
 
         var swInit = [
           "(function() {",
-          "  var swCode = atob('" + btoa(swCode) + "');",
+          "  var swCode = decodeURIComponent(escape(atob('" + utf8ToBase64(swCode) + "')));",
           "  var swBlob = new Blob([swCode], { type: 'application/javascript' });",
           "  var swUrl = URL.createObjectURL(swBlob);",
           "  if ('serviceWorker' in navigator) {",
@@ -546,7 +550,7 @@
       function generateIconSVG(color, name) {
         var initial = name.charAt(0).toUpperCase();
         var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="128" fill="' + color + '"/><text x="256" y="320" font-family="Arial,sans-serif" font-size="240" font-weight="bold" fill="white" text-anchor="middle">' + initial + '</text></svg>';
-        return btoa(svg);
+        return utf8ToBase64(svg);
       }
 
       installBtn.addEventListener("click", function() {
