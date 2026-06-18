@@ -7,6 +7,7 @@
   <meta name="theme-color" content="#0f172a">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -245,7 +246,7 @@
     </div>
 
     <button class="install-btn" id="installBtn">📲 PWA হিসেবে ওপেন করুন</button>
-    <button class="download-btn" id="downloadBtn">💾 HTML ফাইল ডাউনলোড করুন</button>
+    <button class="download-btn" id="downloadBtn">💾 PWA প্যাকেজ (ZIP) ডাউনলোড করুন</button>
     <button class="reset-btn" id="resetBtn">🔄 নতুন ফাইল আপলোড করুন</button>
   </div>
 
@@ -284,6 +285,9 @@
       var uploadedHTML = "";
       var generatedBlobUrl = "";
       var generatedFileName = "";
+      var generatedManifestJSON = "";
+      var generatedSWJS = "";
+      var generatedAppName = "";
 
       themeColorPicker.addEventListener("input", function(e) {
         themeColorText.value = e.target.value;
@@ -371,13 +375,18 @@
         var theme = themeColorPicker.value;
         var bg = bgColorPicker.value;
 
-        var pwaHTML = wrapAsPWA(uploadedHTML, name, theme, bg);
-
-        if (generatedBlobUrl) URL.revokeObjectURL(generatedBlobUrl);
-        var blob = new Blob([pwaHTML], { type: "text/html" });
-        generatedBlobUrl = URL.createObjectURL(blob);
+        var pwa = wrapAsPWA(uploadedHTML, name, theme, bg, false, false);
+        generatedAppName = name;
+        generatedManifestJSON = pwa.manifestJSON;
+        generatedSWJS = pwa.swJS;
         generatedFileName = name.replace(/\s/g, "-").toLowerCase() + "-pwa.html";
 
+        if (generatedBlobUrl) URL.revokeObjectURL(generatedBlobUrl);
+        var blob = new Blob([pwa.html], { type: "text/html" });
+        generatedBlobUrl = URL.createObjectURL(blob);
+
+        if (previewFrame.dataset.blobUrl) URL.revokeObjectURL(previewFrame.dataset.blobUrl);
+        previewFrame.dataset.blobUrl = generatedBlobUrl;
         previewFrame.src = generatedBlobUrl;
         previewSection.classList.add("show");
         installBtn.classList.add("show");
@@ -393,7 +402,41 @@
         return btoa(unescape(encodeURIComponent(str)));
       }
 
-      function wrapAsPWA(html, name, themeColor, bgColor) {
+      function buildServiceWorkerJS() {
+        return [
+          "const CACHE_NAME = 'pwa-cache-v1';",
+          "self.addEventListener('install', function(e) {",
+          "  e.waitUntil(caches.open(CACHE_NAME).then(function(c) { return c.addAll(['./']); }));",
+          "  self.skipWaiting();",
+          "});",
+          "self.addEventListener('activate', function(e) {",
+          "  e.waitUntil(",
+          "    caches.keys().then(function(names) {",
+          "      return Promise.all(names.filter(function(n) { return n !== CACHE_NAME; }).map(function(n) { return caches.delete(n); }));",
+          "    })",
+          "  );",
+          "  self.clients.claim();",
+          "});",
+          "self.addEventListener('fetch', function(e) {",
+          "  e.respondWith(",
+          "    caches.match(e.request).then(function(cached) {",
+          "      if (cached) return cached;",
+          "      return fetch(e.request).then(function(response) {",
+          "        if (response && response.status === 200 && e.request.method === 'GET') {",
+          "          var copy = response.clone();",
+          "          caches.open(CACHE_NAME).then(function(c) { c.put(e.request, copy); });",
+          "        }",
+          "        return response;",
+          "      }).catch(function() {",
+          "        return new Response('Offline', { status: 503 });",
+          "      });",
+          "    })",
+          "  );",
+          "});"
+        ].join("\n");
+      }
+
+      function wrapAsPWA(html, name, themeColor, bgColor, usePngFiles, includeSW) {
         var bodyMatch = html.match(/<body[^>]*>([\s\S]*)<\/body>/i);
         var bodyContent = bodyMatch ? bodyMatch[1] : html;
 
@@ -412,7 +455,8 @@
           name: name,
           short_name: name.slice(0, 12),
           description: name + " - PWA App",
-          start_url: "./",
+          start_url: "./index.html",
+          id: "./index.html",
           display: "standalone",
           orientation: "portrait",
           background_color: bgColor,
@@ -420,8 +464,8 @@
           scope: "./",
           lang: "bn",
           icons: [
-            { src: "data:image/svg+xml;base64," + iconSvg, sizes: "192x192", type: "image/svg+xml" },
-            { src: "data:image/svg+xml;base64," + iconSvg, sizes: "512x512", type: "image/svg+xml" }
+            { src: "./icon-192.png", sizes: "192x192", type: "image/png" },
+            { src: "./icon-512.png", sizes: "512x512", type: "image/png" }
           ]
         };
 
@@ -468,20 +512,22 @@
         title.textContent = pageTitle;
         head.appendChild(title);
 
-        var manifestLink = doc.createElement("link");
-        manifestLink.setAttribute("rel", "manifest");
-        manifestLink.setAttribute("href", "data:application/json;base64," + utf8ToBase64(JSON.stringify(manifestObj)));
-        head.appendChild(manifestLink);
+        if (includeSW) {
+          var manifestLink = doc.createElement("link");
+          manifestLink.setAttribute("rel", "manifest");
+          manifestLink.setAttribute("href", "./manifest.json");
+          head.appendChild(manifestLink);
+        }
 
         var iconLink = doc.createElement("link");
         iconLink.setAttribute("rel", "apple-touch-icon");
-        iconLink.setAttribute("href", "data:image/svg+xml;base64," + iconSvg);
+        iconLink.setAttribute("href", usePngFiles ? "./icon-192.png" : "data:image/svg+xml;base64," + iconSvg);
         head.appendChild(iconLink);
 
         var faviconLink = doc.createElement("link");
         faviconLink.setAttribute("rel", "icon");
-        faviconLink.setAttribute("type", "image/svg+xml");
-        faviconLink.setAttribute("href", "data:image/svg+xml;base64," + iconSvg);
+        faviconLink.setAttribute("type", usePngFiles ? "image/png" : "image/svg+xml");
+        faviconLink.setAttribute("href", usePngFiles ? "./icon-192.png" : "data:image/svg+xml;base64," + iconSvg);
         head.appendChild(faviconLink);
 
         styleMatches.forEach(function(styleTag) {
@@ -514,37 +560,23 @@
         var body = doc.body;
         body.innerHTML = bodyContent;
 
-        var swScript = doc.createElement("script");
-        var swCode = [
-          "self.addEventListener('install',function(e){",
-          "  e.waitUntil(caches.open('pwa-cache').then(function(c){return c.addAll(['./']);}));",
-          "  self.skipWaiting();",
-          "});",
-          "self.addEventListener('activate',function(e){",
-          "  e.waitUntil(self.clients.claim());",
-          "});",
-          "self.addEventListener('fetch',function(e){",
-          "  e.respondWith(caches.match(e.request).then(function(r){",
-          "    return r||fetch(e.request).catch(function(){return new Response('Offline',{status:503});});",
-          "  }));",
-          "});"
-        ].join("\n");
+        if (includeSW) {
+          var swScript = doc.createElement("script");
+          swScript.textContent = [
+            "if ('serviceWorker' in navigator) {",
+            "  window.addEventListener('load', function() {",
+            "    navigator.serviceWorker.register('./sw.js').catch(function(e) { console.log('SW registration failed:', e); });",
+            "  });",
+            "}"
+          ].join("\n");
+          body.appendChild(swScript);
+        }
 
-        var swInit = [
-          "(function() {",
-          "  var swCode = decodeURIComponent(escape(atob('" + utf8ToBase64(swCode) + "')));",
-          "  var swBlob = new Blob([swCode], { type: 'application/javascript' });",
-          "  var swUrl = URL.createObjectURL(swBlob);",
-          "  if ('serviceWorker' in navigator) {",
-          "    navigator.serviceWorker.register(swUrl).catch(function(e) { console.log('SW:', e); });",
-          "  }",
-          "})();"
-        ].join("\n");
-
-        swScript.textContent = swInit;
-        body.appendChild(swScript);
-
-        return "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+        return {
+          html: "<!DOCTYPE html>\n" + doc.documentElement.outerHTML,
+          manifestJSON: JSON.stringify(manifestObj, null, 2),
+          swJS: buildServiceWorkerJS()
+        };
       }
 
       function generateIconSVG(color, name) {
@@ -553,28 +585,83 @@
         return utf8ToBase64(svg);
       }
 
+      function svgToPngBlob(iconSvgBase64, size) {
+        return new Promise(function(resolve, reject) {
+          var img = new Image();
+          img.onload = function() {
+            var canvas = document.createElement("canvas");
+            canvas.width = size;
+            canvas.height = size;
+            var ctx = canvas.getContext("2d");
+            ctx.drawImage(img, 0, 0, size, size);
+            canvas.toBlob(function(blob) {
+              if (blob) resolve(blob); else reject(new Error("PNG conversion failed"));
+            }, "image/png");
+          };
+          img.onerror = function() { reject(new Error("Icon image load failed")); };
+          img.src = "data:image/svg+xml;base64," + iconSvgBase64;
+        });
+      }
+
       installBtn.addEventListener("click", function() {
         if (!generatedBlobUrl) return;
         window.open(generatedBlobUrl, "_blank");
-        showToast("📱 নতুন ট্যাবে ওপেন হয়েছে। Chrome মেনু থেকে \"Add to Home Screen\" চাপুন!");
+        showToast("⚠️ এটা শুধু প্রিভিউ। প্রকৃত PWA ইনস্টল করতে নিচের \"ZIP ডাউনলোড\" বাটন দিয়ে ফাইল নামিয়ে আসল সার্ভারে (যেমন GitHub Pages) আপলোড করুন।");
       });
 
       downloadBtn.addEventListener("click", function() {
-        if (!generatedBlobUrl) return;
-        var a = document.createElement("a");
-        a.href = generatedBlobUrl;
-        a.download = generatedFileName;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        showToast("💾 ফাইল ডাউনলোড হয়েছে!");
+        if (!generatedManifestJSON || !generatedSWJS) return;
+        if (typeof JSZip === "undefined") {
+          showToast("⚠️ ZIP লাইব্রেরি লোড হয়নি, ইন্টারনেট সংযোগ চেক করুন।");
+          return;
+        }
+
+        var name = generatedAppName || "আমার অ্যাপ";
+        var theme = themeColorPicker.value;
+        var bg = bgColorPicker.value;
+        var pwa = wrapAsPWA(uploadedHTML, name, theme, bg, true, true);
+        var iconSvgBase64 = generateIconSVG(theme, name);
+
+        showToast("⏳ প্যাকেজ তৈরি হচ্ছে...");
+
+        Promise.all([
+          svgToPngBlob(iconSvgBase64, 192),
+          svgToPngBlob(iconSvgBase64, 512)
+        ]).then(function(pngBlobs) {
+          var zip = new JSZip();
+          zip.file("index.html", pwa.html);
+          zip.file("manifest.json", generatedManifestJSON);
+          zip.file("sw.js", generatedSWJS);
+          zip.file("icon-192.png", pngBlobs[0]);
+          zip.file("icon-512.png", pngBlobs[1]);
+
+          var zipFileName = name.replace(/\s/g, "-").toLowerCase() + "-pwa.zip";
+
+          return zip.generateAsync({ type: "blob" }).then(function(content) {
+            var url = URL.createObjectURL(content);
+            var a = document.createElement("a");
+            a.href = url;
+            a.download = zipFileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+            showToast("💾 ZIP ফাইল ডাউনলোড হয়েছে! Unzip করে সব ফাইল একসাথে একটা real সার্ভারে (GitHub Pages, Netlify ইত্যাদি) আপলোড করুন।");
+          });
+        }).catch(function(err) {
+          showToast("⚠️ প্যাকেজ তৈরি করতে সমস্যা হয়েছে: " + err.message);
+        });
       });
 
       resetBtn.addEventListener("click", function() {
         uploadedHTML = "";
         if (generatedBlobUrl) URL.revokeObjectURL(generatedBlobUrl);
+        delete previewFrame.dataset.blobUrl;
         generatedBlobUrl = "";
         generatedFileName = "";
+        generatedManifestJSON = "";
+        generatedSWJS = "";
+        generatedAppName = "";
 
         fileInput.value = "";
         uploadArea.style.display = "block";
