@@ -245,7 +245,7 @@
       </div>
     </div>
 
-    <button class="install-btn" id="installBtn">📲 PWA হিসেবে ওপেন করুন</button>
+    <button class="install-btn" id="installBtn">👁️ প্রিভিউ (নতুন ট্যাবে দেখুন)</button>
     <button class="download-btn" id="downloadBtn">💾 PWA প্যাকেজ (ZIP) ডাউনলোড করুন</button>
     <button class="reset-btn" id="resetBtn">🔄 নতুন ফাইল আপলোড করুন</button>
   </div>
@@ -606,7 +606,7 @@
       installBtn.addEventListener("click", function() {
         if (!generatedBlobUrl) return;
         window.open(generatedBlobUrl, "_blank");
-        showToast("⚠️ এটা শুধু প্রিভিউ। প্রকৃত PWA ইনস্টল করতে নিচের \"ZIP ডাউনলোড\" বাটন দিয়ে ফাইল নামিয়ে আসল সার্ভারে (যেমন GitHub Pages) আপলোড করুন।");
+        showToast("👁️ এটা শুধু ডিজাইন প্রিভিউ — এখানে \"Install\" আইকন আসবে না। প্রকৃতভাবে ইনস্টল করতে নিচের \"PWA প্যাকেজ (ZIP) ডাউনলোড করুন\" বাটন দিয়ে ফাইল নামিয়ে GitHub Pages-এর মতো একটা real সার্ভারে আপলোড করুন, তারপর সেই লিংকে গিয়ে ইনস্টল করুন।");
       });
 
       downloadBtn.addEventListener("click", function() {
